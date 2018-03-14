@@ -3,7 +3,8 @@ CFLAGS_common ?= -Wall -std=gnu99
 CFLAGS_orig = -O0
 CFLAGS_opt  = -O0
 
-EXEC = phonebook_orig phonebook_opt phonebook_hash
+EXEC = phonebook_orig phonebook_opt phonebook_hash phonebook_bst
+
 
 GIT_HOOKS := .git/hooks/applied
 .PHONY: all
@@ -30,6 +31,11 @@ phonebook_hash: $(SRCS_common) phonebook_hash.c phonebook_hash.h
 		-DIMPL="\"$@.h\"" -o $@ \
 		$(SRCS_common) $@.c
 
+phonebook_bst: $(SRCS_common) phonebook_bst.c phonebook_bst.h
+	$(CC) $(CFLAGS_common) $(CFLAGS_opt) \
+		-DIMPL="\"$@.h\"" -o $@ \
+		$(SRCS_common) $@.c
+
 run: $(EXEC)
 	echo 3 | sudo tee /proc/sys/vm/drop_caches
 	watch -d -t "./phonebook_orig && echo 3 | sudo tee /proc/sys/vm/drop_caches"
@@ -44,7 +50,9 @@ cache-test: $(EXEC)
 	perf stat --repeat 100 \
 		-e cache-misses,cache-references,instructions,cycles \
 		./phonebook_hash
-
+	perf stat --repeat 100 \
+		-e cache-misses,cache-references,instructions,cycles \
+		./phonebook_bst
 output.txt: cache-test calculate
 	./calculate
 
@@ -57,4 +65,4 @@ calculate: calculate.c
 .PHONY: clean
 clean:
 	$(RM) $(EXEC) *.o perf.* \
-	      	calculate orig.txt opt.txt hash.txt output.txt runtime.png
+	      	calculate orig.txt opt.txt hash.txt bst.txt output.txt runtime.png
