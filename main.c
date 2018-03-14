@@ -19,6 +19,12 @@
 #define OUT_FILE "hash.txt"
 #endif
 
+#ifdef BST
+#undef OUT_FILE
+#define OUT_FILE "bst.txt"
+#endif
+
+
 #define DICT_FILE "./dictionary/words.txt"
 
 static double diff_in_second(struct timespec t1, struct timespec t2)
@@ -92,6 +98,11 @@ int main(int argc, char *argv[])
     assert(findName(input, ht) &&
            "Did you implement findName() in " IMPL "?");
     assert(0 == strcmp(findName(input, ht)->lastName, "zyxel"));
+#elif defined(BST)
+     bst *root = list_to_BST(e);
+    assert(findName(input, root) &&
+           "Did you implement findName() in " IMPL "?");
+assert(0 == strcmp(findName(input, root)->lastName, "zyxel"));
 #else
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
@@ -105,6 +116,8 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_REALTIME, &start);
 #ifdef HASH
     findName(input, ht);
+#elif defined(BST)
+    findName(input,root);    
 #else
     findName(input, e);
 #endif
@@ -120,7 +133,9 @@ int main(int argc, char *argv[])
 
 #ifdef HASH
     release_hash_table(ht);
-#endif
+#elif defined(BST)
+    releaseTree(root);    
+#else
 
     while(pHead->pNext) {
         entry *next = pHead->pNext;
@@ -128,6 +143,6 @@ int main(int argc, char *argv[])
         free(next);
     }
     free(pHead);
-
+#endif
     return 0;
 }
